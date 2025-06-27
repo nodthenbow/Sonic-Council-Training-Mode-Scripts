@@ -1,0 +1,118 @@
+SystemID SAT
+0DBE72	w	u	1	Work Ram High	60f timer (unpaused)
+0DBCD8	w	s	1	Work Ram High	distance between players
+0DB9F0	w	u	1	Work Ram High	distance between players?
+06A0E2	w	u	1	Work Ram High	Frame Count
+0BC090	w	u	1	Work Ram High	Frame Countdown, not time
+0C1ED4	w	h	1	Work Ram High	p1 animation frame?
+0D28B8	w	u	1	Work Ram High	p1 facing
+0D363C	w	u	1	Work Ram High	p1 h position dupe?
+0DBA49	b	u	1	Work Ram High	p1h > p2h
+0DBA57	b	u	1	Work Ram High	p1 invuln flag, checks if 12c34 || dbb57 null
+0DBB93	b	u	1	Work Ram High	p2 invuln (no hurtbox?)
+0DBA92	w	u	1	Work Ram High	P1 Health
+0DBA96	w	u	1	Work Ram High	p1 stun
+0DBA9A	w	u	1	Work Ram High	p1 dizzy timer
+0DBBD2	w	u	1	Work Ram High	p2 stun
+0DBBD6	w	u	1	Work Ram High	p2 dizzy timer
+0DBA9C	w	u	1	Work Ram High	P1 meter decimal
+0DBA9E	b	u	1	Work Ram High	p1 Meter number
+0DBB20	w	u	1	Work Ram High	p1 position h stage 2f ago
+0DBB08	w	u	1	Work Ram High	p1 position h stage actual
+0D30FC	w	u	1	Work Ram High	p1 position h stage? jiggles in animations
+0D3098	w	u	1	Work Ram High	p2 facing
+0DBBCE	w	u	1	Work Ram High	P2 Health
+0DBBD8	w	u	1	Work Ram High	p2 meter decimal
+0DBBDA	w	u	1	Work Ram High	p2 meter number
+0BA160	d	u	1	Work Ram High	RNG?
+0C1DF5	b	u	1	Work Ram High	something per second only while unpaused
+0DBFA0	w	u	1	Work Ram High	Timer number (freeze to freeze timer)
+0	S	_	1		p1 boxes
+0C1EF8	w	h	1	Work Ram High	
+0C1EFC	w	h	1	Work Ram High	
+0DBBBA	w	u	1	Work Ram High	p1 attack damage
+0C1EDC	w	h	1	Work Ram High	p1 moves on h-push related to screen pos
+0DBA7E	w	u	1	Work Ram High	p2 attack damage
+0C1ED8	w	h	1	Work Ram High	animation frame?
+0C1EDA	w	h	1	Work Ram High	vert
+0C1EDE	w	h	1	Work Ram High	vert
+0	S	_	1		vert p1 boxes
+0D30FA	w	u	1	Work Ram High	
+0D3100	w	u	1	Work Ram High	
+0D3102	w	u	1	Work Ram High	
+0DBB24	w	s	1	Work Ram High	
+0DBB26	w	b	1	Work Ram High	
+0DBB0C	d	s	1	Work Ram High	jump v pos 00187b8
+0D363E	w	s	1	Work Ram High	return to v pos??
+0DBB0E	w	b	1	Work Ram High	v accel/v up?
+0DBB16	w	b	1	Work Ram High	v down accel/v?
+0	S	_	1		flicker effects h pos
+0BC9F0	w	u	1	Work Ram High	
+0BC9FC	w	u	1	Work Ram High	
+0C2018	w	u	1	Work Ram High	
+0C201C	w	u	1	Work Ram High	
+0C2020	w	u	1	Work Ram High	
+0C2024	w	u	1	Work Ram High	
+0C2058	w	u	1	Work Ram High	
+0C205C	w	u	1	Work Ram High	
+0C2060	w	u	1	Work Ram High	
+0C2064	w	u	1	Work Ram High	
+0	S	_	1		mednafen debugging 
+07E348	b	u	1	Work Ram High	gets set as 5 at 060134a0, idk why
+0DBA59	b	u	1	Work Ram High	idk p1 invuln? 0601878a tst
+0DBB95	b	u	1	Work Ram High	idk p2 invuln? 0601878a tst
+0DBA5A	b	u	1	Work Ram High	idk p1 invuln dupe?
+0DBA0C	w	h	1	Work Ram High	p1 move offset/index? (*4 in code)
+0DBB48	w	h	1	Work Ram High	p2 move offset/index? (*4 in code)
+0DBA00	b	u	1	Work Ram High	p1base/character index
+0DBA2E	w	s	1	Work Ram High	p1 idk 060180a, move state index? loc offset?
+0DBA30	w	s	1	Work Ram High	p1 idk 0601812, move state index? loc offset 2?
+0DBB3C	b	u	1	Work Ram High	p2base/character index
+0DBAF7	b	h	1	Work Ram High	p1 increments on buttons pos
+0DBAF6	b	u	1	Work Ram High	p1 increments on dpad pos/neg
+0DBA72	b	u	1	Work Ram High	p1 hurtbox contacting hitbox
+0DBA73	b	u	1	Work Ram High	p1 hurtbox contacting hitbox blocking
+0DBBAE	b	u	1	Work Ram High	p2 hurtbox contacting hitbox
+0DBBAF	b	u	1	Work Ram High	p2 hurtbox contacting hitbox blocking
+0DBA02	b	h	1	Work Ram High	p1 state?
+0DBC33	b	h	1	Work Ram High	p2 increments on button pos
+0DBC32	b	h	1	Work Ram High	p2 increments on dpad pos/neg
+0DBB3E	b	h	1	Work Ram High	p2 state?
+0DBD74	w	s	1	Work Ram High	p2 fireball 1 pos
+0DBD74	w	s	1	Work Ram High	p1 fireball 1 pos
+0DBD72	b	u	1	Work Ram High	p2 fireball 1 hit opponent
+0DBCF2	b	u	1	Work Ram High	p1 fireball 1 hit opponent
+0DBCDF	b	u	1	Work Ram High	players pushing other
+0DBAA4	w	h	1	Work Ram High	p1 controller positive edge
+0DBCE0	b	u	1	Work Ram High	paused bool
+0DBA4A	b	u	1	Work Ram High	p1 facing left bool?
+0DBEF8	b	u	1	Work Ram High	round state (4 = playing currently)
+0DBAA2	w	h	1	Work Ram High	p1 controller read
+0DBBDE	w	h	1	Work Ram High	p2 controller read
+0DBDF0	d	s	1	Work Ram High	screen position h 06016dea
+0DBDF4	w	s	1	Work Ram High	camera shake timer? 06016dfc
+0DB6A4	d	s	1	Work Ram High	screen position h +a00000?
+0DBCC4	d	h	1	Work Ram High	screen position v (inverted, 0x00200000 lowest)
+0D8448	d	h	1	Work Ram High	camera? position v
+0	S	_	1		idk
+0D2190	w	u	1	Work Ram High	idk 6012c94
+0D22CC	w	u	1	Work Ram High	idk 6012c94, but +13c
+0D843C	w	h	1	Work Ram High	p1 idk, 06012dca, when 8000 it checks for r button pos edge
+0D843E	w	h	1	Work Ram High	p2 idk, 06012dca
+0DB688	w	h	1	Work Ram High	p1 idk, 06012ddc, L button?
+0D2670	w	h	1	Work Ram High	idk, 06012c94
+0D2730	w	h	1	Work Ram High	idk, 06012c94
+0CA160	w	u	1	Work Ram High	param1 in input handler function
+0BA5A0	w	h	1	Work Ram High	idk 60042b4
+0D2182	w	u	1	Work Ram High	idk 0600428c
+0D2188	w	u	1	Work Ram High	idk 06004292
+0DBCE4	w	u	1	Work Ram High	idk 06013864
+0DBA66	b	u	1	Work Ram High	idk p1 0601892e hitbox not deactivated?
+0DBBA2	b	u	1	Work Ram High	idk p2 0601892e hitbox not deactivated?
+0DBA67	b	u	1	Work Ram High	idk p1 06018950 number of hitboxes?
+0DBBA3	b	u	1	Work Ram High	idk p2 06018950 number of hitboxes?
+0	S	_	1		idk2
+0D28C8	w	s	1	Work Ram High	
+0D28CA	w	s	1	Work Ram High	
+0D28CA	w	h	1	Work Ram High	
+

@@ -1,0 +1,319 @@
+Sonic Council debugger notes
+high memory starts at 0x06000000
+l 32 bit Long, 4B (8 hex digits)
+w 16 bit Word, 2B (4 hex digits)
+b 8 bit Byte, 1B (2 hex digits)
+SR register last digit is T
+060253C reads p1 health
+060174d6 reads p1 health into r1, then if >= 0: go to p2 health check, else branch to 0x060174e4
+060174de reads p2 health into r1, then if >= 0: go to p2 health check, else branch to 0x060174ea
+
+p1 base address is 060DBA00 they start there and use an offset to find p2
+p2 base address is 060DBB3C
+13c is the p1 to p2 offset
+
+player base also stores the character's index
+0 yuko, 1 kato, 2 mika, 3 ishida, 4 naoko, 5 ai, 6 rika, 7 shibata, 8 kumiko, 9 aya, 10 t-ai, 11 s-naoko
+0606B43C 0606CAF4 0606E68C 060704A0 06071F34 06073BD8 06075798 060772B0 06078CD0 0607A630 06073BD8 06071F34
+0 seems like dead center stage, round start positions are -60 and 60
+
+
+060dba57 invuln flag / push/throwbox inactive? p1 (this is p1base+57) b
+060dbb93 invuln flag / push/throwbox inactive? p2? (this is p2base+57) b
+060dba55 p1 not in neutral state flag (5 and 2 not in stun)?
+060dbb91 p2 not in neutral state flag (5 and 2 not in stun)
+
+
+
+called by 06042554 ish, no clue what calls that
+
+06014948 writes p2 health as they get hit!!!!!!!!
+
+the 060134c4 ish stuff
+060dba00+13c(for p2?)+(dpad counter (range of 0-F))*2+a6
+range= 060dbbe2-060dbc00, evens only, and 
+the stuff in the range gets set to something when you do dpad inputs and it gets reset when you do a special move (not supers though?), probably related to motion inputs?
+060baa6-060dbac5 for p1, first byte is dpad dir, 2nd is frame count for that dir
+
+060dbac6-060dbaf5 for p1, pos edge from buttons history, 3 byte objects, 1st is button, 2nd some timer related thing idk, 3rd frame count for button
+
+if that guess is right then at 060425f6 (bsr 0x0604260c) probably calls a special move subroutine
+investigate that for boxes. It's ai's 623p
+
+figure out what the loop at 0604263a ish does, it's moving something, then it checks if r3=r4
+same with 0600432c
+
+06007c5a lotsa moves and writes here to check out 
+
+060042a6 bra to 060042b2, checks if what is at 060ba5a0 (w) >= 0: bt 06004278 else idk some branch
+
+
+
+diff in states 
+6001c14-6001c63 
+6001d08-6001e0f
+
+60044c8 weird function missed
+
+
+06012ce0 math stuff, each newline is next instruction:
+starting with reading into r1 00001042, holding 7hp+hk
+r0 = 0x00c0 = 000000c0
+r3 = r1 and r3 = 00000000
+r1 = r0 and r1 = 00000040
+shlr2 r1 = 00000010
+shlr2 r1 = 00000004
+shlr2 r1 = 00000001
+shlr2 r3 = 00000000
+r3 = add r1, r3 = 00000001
+mov r2,r0 = 0607e34c
+mov.b @(r0+r3),r1 = (@0607e34d) 4
+bra, extu.b r1, r3
+
+holding L+R
+r1 = ffff8800
+r3 = 000000c0
+r1 and r3 = 00000000
+r0 and r1 = 00000000
+
+holding lp+mp+lk+mk 
+r1 = 00006005
+r3 = 000000c0
+= 0
+
+holding 3
+r1 = 000000a0
+and r3 = 00000020
+and r1 = 00000080
+shlr2 r1 = 00000020
+= 00000008
+= 00000002
+shlr2 r3 = 00000008
+add r1,r3 = 0000000a
+...
+mov.b (r0 = 0607e34c+a = 0608e356),r1 = 00000003
+facing changes base, right = 0607e34c, left = 0607e35c
+byte arrays 
+for p1, base = 0607e34c
+input 9, offset (r3) = 6
+input 8, offset (r3) = 4
+input 7, offset (r3) = 5
+input 6, offset (r3) = 2
+input 5, offset (r3) = 0
+input 4, offset (r3) = 1
+input 3, offset (r3) = a
+input 2, offset (r3) = 8
+input 1, offset (r3) = 9
+offset doesn't change with facing
+
+for p2, base = 0607e34c 
+input = offset = result facing right = result facing left 
+9 = 6 = 9 = 7
+8 = 4 = 8 = 8
+7 = 5 = 7 = 9
+6 = 2 = 6 = 4
+5 = 0 = 5 = 5
+4 = 1 = 4 = 6
+3 = a = 3 = 1
+2 = 8 = 2 = 2
+1 = 9 = 1 = 3
+
+
+6042558 jsr things that run more than twice:
+6031f98
+60075c4
+
+
+pr = 60042a2
+
+060ca160 holds param1 for the big many function thing at 06042558
+
+Function caller at 06042558 jsr order (and r4 (param1) ai yuko value after, then kato vs ishida on pool value after, then kato ishida arcade):
+none of the param1s change while kato is doing jHK
+06031f98 is something that changes the amount of times it is ran with either stage(prob) or characters
+naoko v mika back ally stage, 06012c74 was d the 2nd time, visits 060326e8 before 06031f98, 8x 06031f98, extra 06007ce0 before the others
+Shibata v Kumiko pool 0601c700 during shibata hk(2) animation, r4 = b, 5, 3a, 38, looks like probably related to hit effects, doesn't happen on whiff or other hitbox changing stuff
+
+0602a60c 9 9 9 (find length of array at 060d7c80+4 (6 bytes per object?), then put that length in 060c7d16)
+06016de4 c 2b 33 (doesn't use r4, camera shake subroutine)
+06012c74 d 2a 34, 06012c74 f 12 3e (tracks input history)
+06016ef0 e 27 37
+0601717c 10 14 27
+06013548 25 11 35 **(after read health every frame)
+060137e8 15 2e 29, 060137e8 6 30 26 (seems like stun handler)
+0601652c 8 c f, 0601652c 14 d 17 ***(1st one is after write p2 health on hit)
+0600d270 12 f d, 0600d270 27 17 36
+06016898 2a 1a 1b
+06016924 2b 1b c, 06016924 2c 1c 30
+06018484 2d 1d 2e
+0601870c 2e 1e 11, 0601870c 2f 1f a ******sets player not getting hit?
+060126fc 30 20 16 (calls invuln check / handler?)
+06031f98 32 22 23, 06031f98 33 23 22, 06031f98 34 24 21, 06031f98 35 16 19, 06031f98 36 a 18, 06031f98 37 (skipped?) 53, extra one e, extra two 8, extra three 1f, extra four 1d, extra five 14 (stage stuff?)
+06005e5c 2 2 2
+06006bd8 3 3 3
+06007830 7 10 1e, 06007830 a 2d 31
+060256b0 16 2f 28, 060256b0 24 13 13
+060075c4 23 26 1a, 060075c4 22 28 2f, 060075c4 21 29 2d, 060075c4 20 31 10
+06007830 1f 32 55, 06007830 1e 33 7, 06007830 1d 34 2c, 06007830 1c 35 4e, 06007830 1b 36 48, 06007830 1a 37 4a, 06007830 19 25 20, 06007830 18 15 2b, 06007830 17 6 2a, 06007830 11 8 12
+06007ee0 13 e 6 then 06007ce0 26 53 5, 06007ee0 28 18 25 then 06007ce0 29 19 15
+06017d08 31 21 24
+06006c80 4 4 4
+END of function caller 
+
+
+Stuff about that loop
+naoko v mika back ally stage, 06012c74 was d the 2nd time, visits 060326e8 before 06031f98
+060326e8 is probably stage related
+06031f98 is probably stage related
+
+
+IMPORTANT:
+060187B6 WILL CALL HITBOX OVERLAP RELATED FUNCTIONS, 0601870c is the handler function
+
+10C important offset?
+
+loop start at 
+r10 starts at 0, it is the loop counter
+1f70 holds pN's h pos / 65536 as sw
+1f72 holds pN's v pos / 65536 as sw
+var1 = base+0xC (word) = the animation state index (@pBase+C), *4 (done at 06018774)
+	so grab the address from below and add that to (@word(playerbase+C)*4)
+	index is character index, which is stored at the playerbase as a byte:
+	0 yuko, 1 kato, 2 mika, 3 ishida, 4 naoko, 5 ai, 6 rika, 7 shibata, 8 kumiko, 9 aya, 10 t-ai, 11 s-naoko
+	0606B43C 0606CAF4 0606E68C 060704A0 06071F34 06073BD8 06075798 060772B0 06078CD0 0607A630 06073BD8 06071F34
+character base + var1 = array1baseAddress (byte array) (happens at 06018766)
+array1baseAddress[0] is movestate/index (number hurtboxes?)? used to end loop, stored in 1f80
+array1baseAddress[1+4*r10] is idk, move hurtbox state/index/loc1 gets added to it though, stored in 1ee4, hori?
+array1baseAddress[2+4*r10] is idk, move hurtbox state/index/loc2 gets added to it though, stored in 1ee6
+array1baseAddress[3+4*r10] is idk, move hurtbox state/index/loc1 gets added to it though, stored in 1ee8, hori?
+array1baseAddress[4+4*r10] is idk, move hurtbox state/index/loc2 gets added to it though, stored in 1eea
+
+if facing left [3] = [3] * -1, and [1] = [1] * -1
+
+then larger of ([1] [3]) + @1f70 stored in 1f2c (r10*5+1f2c)
+then the larger of [1] and [3] is put in r1
+then r4 (1f2c) + r0 (r10*5(*8 maybe, check again lol))
+then @1f70+r1 stored in 1f30 (pN h pos + larger of [1], [3])
+then r6 = @1ee6 and r7 = @1eea
+then larger of [2],[4] + vpos/65536 stored in 1f2e 
+then larger of [2],[4] + vpos/65536 stored in r10*8+6+1f2c (1f32)
+add 1 to r10 and then if @1f80 =< r10 break loop
+the loop uses the next 4 indexes of array1baseAddress (5,6,7,8) 
+
+then if active hitbox:
+hpos/65536 as sw into 1f6c
+vpos/65536 as sw into 1f6e
+
+loop starts at 06018976
+i is probably a counter, long, starts with 0, seems to be from L @1f7c
+temp = i * 16 + r6 (r6 = loop count? * 8) + 060dbc80
+@temp to 1ee4 (hori?)
+from w @(temp+4) to r3, stored in 1ee8 (hori2?)
+	gets address of 1ee8 from @1f90
+@(temp+2) W (vert?) to r1 to 1ee6
+@(temp+6) W to r1 to 1eea (vert2?)
+@temp to r2
+@temp+4 to r1
+
+if @temp > @temp+4 (facing right)
+	1f6c (hpos/65536) into r1, then add @temp+4, then put it in 1eec + loopcount*8
+	1f90 L into r0 (1ee8 address)
+	1f6c W into r2 (hpos/65536 as sw)
+	add 1eec to r6 (loopcount*8)
+	1ee8 W to r1
+else
+	1f6c (hpos/65536) into r1, then add @temp, then put it in 1eec + loopcount*8
+	1ee4 W to r1
+	add 1eec to r6 (loopcount*8)
+	1f6c W to r2 (hpos/65536 as sw)
+
+then add 4 to r6 (loopcounter*8 + 1eec + 4 now)
+add 1f6c (hpos/65536 as sw) to r1 (1ee4 or 1ee8)
+put r1 into new @r6 
+1ee6 to r6 (vert?) to r2
+1eea to r7 (vert2?) to r1
+
+if vert2 > vert
+	r10 into r3
+	r3*8+1eec, r3 to r2
+	1f6e (vpos/65536) to r1
+	r2+2 (r10*8+1eec+2)
+	r1 += vert
+	@r2 W = r1
+	1eea to r1
+else same but vert2 instead of vert
+	
+1f6e (vpos/65536) to r2 
+r2+r1 to r1 and 1ef2
+r10 += 1
+1f7e to r13 (player index) blah blah 
+number of hitboxes < r10 loop again, else loop done 
+end of hitbox loop
+
+r7 = 1f2c (where larger of hurtbox hori is stored)
+r5 = 1eec
+r8 = 1f74 (this is 2 more than vpos/blah, but not from there)
+r0 = 1f80
+@playerbase+67 to r4 (number of hitboxes)
+@1f80 to r6 (arr1 base address, number of hurtboxes?)
+
+WORKING ON 06018A86 / maybe the lua script???
+
+06018e22 function call
+
+
+loop values for function leading up to 06042558 (kato ishida arcade):
+i i*0x40+0x12 value1 i*0x40+0x18 value2 r4after-tst value3
+0 d2182 9 d2188 0 
+9 d24e2 33 d24e8 0 060d24d0 0602a60c
+	jsr to 0604252c, tst @r4+c, bt/s 06042554 (big subroutine caller-4)
+	jsr to 0602a60c, r4 = 9
+8 
+7
+6
+5
+4
+3
+2
+1
+0
+-1
+
+kato ishida gym 0602a620 values 0x:
+0001 0004 0006 0006 000a 000c 0013 0015 0017 0019, ect (d7c84+6*i, 0 <= i <= 63, but only does 29?)
+
+I think below stuff is related to what is set at 06004282
+060425f0, can read l from (0<= i <= 9?, i*96 + 060d2170+c):
+60D217C
+60D21DC
+60D223C
+60D229C
+60D22FC
+60D235C
+60D23BC
+60D241C
+60D247C
+60D24DC
+idk if it can go past 9, but these are the next 3:
+60D253C
+60D259C
+60D25FC run when r4 is c going into 06016de4 first time (kato ishida rooftop)?
+44/66 stop there with i = 18, p2 ishida 214pp i = 17, unpause i = 11
+
+-c +8 and +c, unpause i = 11, (@060d26b0) L 060ca170, L 000000a0 (gets set to 0)
+@060ca170 r4 = 060ca214
+000000a0+060ca170, test = r4?
+
+44
+060d47b0 +4 / +c
+060d47b0 
+
+0600441e
+060426c0
+060116d4
+060116bc
+060116ae
+060116bc
+
+check if at 06012c94 r0 (and macl) is ever not 4e0 or 5a0 (5a0-4e0=c0) RESULTS: it isn't afaik
+
