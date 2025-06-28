@@ -7,12 +7,10 @@ SHA256 checksum for data and names: e2394185d08792923044f912a263e71e7ca5d3a8f7ba
 --doesn't work on some stuff (like fireballs, pushboxes, throws) because I didn't want to do more REing
 
 --[[
-know issues:
-	Boxes don't follow the screen vertically scrolling
+known issues:
 	Kato's command grab doesn't show (it's probably an actual throw, unlike the other unblockables)
+	Invulnerability can be bypassed by some stuff (seems like a glitch in the game?)
 potential issues:
-	screen offsets are probably wrong, can cause incorrect hit/hurtbox visual overlaps
-	entirely untested with the unlockable goons, other than their base address being right
 	supers (the were completely ignored while I was making this)
 	juggle states might show invuln incorrectly
 	unblockables are untested, they might be throws and not show up
@@ -47,7 +45,7 @@ whiteBG = 0x70ffffff
 
 --screen position for character point offsets (I'm just guessing what they should be off visuals
 pointOffsetH = 165
-pointOffsetV = 55
+pointOffsetV = 119
 --if it is wrong it's only a pixel off (v might be 2 off, it's harder to see)
 
 --the once per frame stuff
@@ -73,7 +71,7 @@ function fn()
 	screenEdgeV = memory.read_s32_be(0x0dbcc4)
 	screenEdgeV = screenEdgeV / 65536
 	charPointHPos = hPos-screenEdgeH+pointOffsetH
-	charPointVPos = vPos+screenEdgeV+pointOffsetV
+	charPointVPos = vPos-screenEdgeV+pointOffsetV
 	gui.drawRectangle(charPointHPos,charPointVPos,1,1,"white","white")
 	charWidth = 0
 	for i = 0, numHurtboxes-1, 1 do
@@ -156,7 +154,7 @@ function fn()
 	vPos = vPos / 65536
 	numHurtboxes = memory.read_u8(activeHurtboxBase)
 	charPointHPos = hPos-screenEdgeH+pointOffsetH 
-	charPointVPos = vPos+screenEdgeV+pointOffsetV
+	charPointVPos = vPos-screenEdgeV+pointOffsetV
 	gui.drawRectangle(charPointHPos,charPointVPos,1,1,"white","white")
 
 	--hurtboxes
