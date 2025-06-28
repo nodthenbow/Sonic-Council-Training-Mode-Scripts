@@ -33,7 +33,7 @@ p1MeterSmallPrev = 0
 p2MeterSmallPrev = 0
 
 console.clear()
-console.log("Warning about frame advantage: both players go through 1 frame of idle at the end of all grounded recovery, you can block and nothing else (wakeup does not force this, wakeup dp is real). A move that is +9 on hit will only link with a move that has a startup <= 8, but a frame advantage of 0 means if both players press the same speed of a button it will trade still.") 
+console.log("Warning about frame advantage: both players go through 1 frame of idle at the end of all grounded recovery (including dash startup), you can block and nothing else (wakeup does not force this, wakeup dp is real). A move that is +9 on hit will only link with a move that has a startup <= 8, but a frame advantage of 0 means if both players press the same speed of a button it will trade still.") 
 
 while true do
 	emu.frameadvance();
@@ -102,7 +102,7 @@ while true do
 			--console.log("reset stats")
 		end
 		if prevActOpp == 1 and currActOpp == 0 and currAct == 0 then 
-			console.log("startup = " .. inMove) 
+			console.log("startup = " .. inMove+framesOfAct) 
 			framesOfActOpp = 0
 		end
 		if notInNeutral == 1 then
