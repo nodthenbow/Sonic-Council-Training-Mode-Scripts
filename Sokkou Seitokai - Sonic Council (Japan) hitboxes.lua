@@ -41,7 +41,7 @@ characterBaseAddress = { --index is the same as in game, which is found at p1Bas
 lightGreen = 0xb000c000 --hurtbox
 lightGreenBG = 0x7000c000
 lightRed = 0xb0ff0000 --hitbox
-lightRedBG = 0x70450000
+lightRedBG = 0x70ff0000
 white = 0xb0ffffff --currently invuln hurtbox (if I implement that)
 whiteBG = 0x70ffffff
 
@@ -58,6 +58,11 @@ function fn()
 	activeHurtboxBase = hurtboxBase + memory.read_u16_be(p1Base+0xC)*4 --pNBase*4 is the offset for the address
 	activeHurtboxBase = memory.read_u32_be(activeHurtboxBase)
 	activeHurtboxBase = activeHurtboxBase - 0x06000000 --the saturn uses 06000000 to point to high ram, bizhawk doesn't
+	noBoxes = 0
+	if activeHurtboxBase < 0 then 
+		activeHurtboxBase = 0 
+		noBoxes = 1
+	end
 	hPos = memory.read_s32_be(p1Base+0x108) --h pos offset
 	hPos = hPos / 65536
 	vPos = memory.read_s32_be(p1Base+0x10c) --v pos offset
@@ -72,6 +77,7 @@ function fn()
 	gui.drawRectangle(charPointHPos,charPointVPos,1,1,"white","white")
 	charWidth = 0
 	for i = 0, numHurtboxes-1, 1 do
+		if noBoxes == 1 then break end
 		hori1 = memory.read_u8(activeHurtboxBase+1+4*i)
 		hori2 = memory.read_u8(activeHurtboxBase+3+4*i)
 		vert1 = memory.read_u8(activeHurtboxBase+2+4*i)
@@ -139,7 +145,11 @@ function fn()
 	activeHurtboxBase = hurtboxBase + memory.read_u16_be(p2Base+0xC)*4 --pNBase*4 is the offset for the address
 	activeHurtboxBase = memory.read_u32_be(activeHurtboxBase)
 	activeHurtboxBase = activeHurtboxBase - 0x06000000 --the saturn uses 06000000 to point to high ram, bizhawk doesn't
-	--console.log("activeHurtboxBase adr " .. activeHurtboxBase)
+	noBoxes = 0
+	if activeHurtboxBase < 0 then 
+		activeHurtboxBase = 0 
+		noBoxes = 1
+	end
 	hPos = memory.read_s32_be(p2Base+0x108) --h pos offset
 	hPos = hPos / 65536
 	vPos = memory.read_s32_be(p2Base+0x10c) --v pos offset
@@ -151,6 +161,7 @@ function fn()
 
 	--hurtboxes
 	for i = 0, numHurtboxes-1, 1 do
+		if noBoxes == 1 then break end
 		hori1 = memory.read_u8(activeHurtboxBase+1+4*i)
 		hori2 = memory.read_u8(activeHurtboxBase+3+4*i)
 		vert1 = memory.read_u8(activeHurtboxBase+2+4*i)
