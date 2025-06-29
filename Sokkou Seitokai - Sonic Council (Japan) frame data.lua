@@ -57,10 +57,10 @@ while true do
 			if p2HealthStart ~= temp then ret = ret .. "p2 dam = " .. p2HealthStart - temp .. " \n" end
 			
 			temp = memory.read_s16_be(0xdba96)
-			if p1StunStart ~= temp then ret = ret .. "p1 stun = " .. p1StunStart - temp .. " \n" end
+			if p1StunStart ~= temp then ret = ret .. "p1 stun = " .. temp - p1StunStart .. " \n" end
 			
 			temp = memory.read_s16_be(0xdba96+0x13c)
-			if p2StunStart ~= temp then ret = ret .. "p2 stun = " .. p2StunStart - temp .. " \n" end
+			if p2StunStart ~= temp then ret = ret .. "p2 stun = " .. temp - p2StunStart .. " \n" end
 
 			temp = memory.read_u8(0xdba9e)*800 + memory.read_u16_be(0xdba9c)
 			if (p1MeterBigStart * 800 + p1MeterSmallStart) ~= temp then 
