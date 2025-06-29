@@ -104,6 +104,7 @@ while true do
 		if prevActOpp == 1 and currActOpp == 0 and currAct == 0 then 
 			console.log("startup = " .. inMove+framesOfAct) 
 			framesOfActOpp = 0
+			framesOfAct = 0
 		end
 		if notInNeutral == 1 then
 			if currAct == 0 then inMove = inMove + 1 end
