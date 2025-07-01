@@ -1,10 +1,22 @@
 --[[
-Frame data script for p1
+Frame data script for both players
 grabs damage, stun, meter gain, startup on contact, and frame advantage
-i might make this grab all startup, active, and recovery as well at some point
-might make this work for p2 as well at some point, probs not though
+i might make this count all startup, active, and recovery at some point
 probs will investigate the other actionable flag that is +1 offset from the used flag
+(pretty sure it's just for rolls and guard cancel or something, maybe the buffer too?)
+
+For some reason it really lags the game out if you load the hitboxes script while this script is running. 
+No clue why, but the fix is to just run that script before this script starts running
 --]]
+
+healthRefill = 1 --change to 0 to turn off auto health refill
+writeToConsole = 0 -- change to 0 to turn off writing to console
+writeToScreen = 1 -- change to 0 to turn off writing to screen
+
+console.clear()
+console.log("Warning about frame advantage: both players go through 1 frame of idle at the end of all grounded recovery (including dash startup), you can block and nothing else (wakeup does not force this, wakeup dp is real). A move that is +9 on hit will only link with a move that has a startup <= 8, but a frame advantage of 0 means if both players press the same speed of a button it will trade still.\n\nYou can turn off/on console by setting writeToConsole = 0 or 1, as with writeToScreen = 0 or 1, and healthRefill = 0 or 1, at any time using the console") 
+
+
 prevAct = 2
 currAct = 2
 prevActOpp = 2
@@ -17,7 +29,6 @@ framesOfActOpp = 0
 
 notInNeutral = 0
 notInNeutralPrev = 0
-healthRefill = 1
 
 p1HealthStart = 0
 p2HealthStart = 0
@@ -32,8 +43,42 @@ p2MeterBigPrev = 0
 p1MeterSmallPrev = 0
 p2MeterSmallPrev = 0
 
-console.clear()
-console.log("Warning about frame advantage: both players go through 1 frame of idle at the end of all grounded recovery (including dash startup), you can block and nothing else (wakeup does not force this, wakeup dp is real). A move that is +9 on hit will only link with a move that has a startup <= 8, but a frame advantage of 0 means if both players press the same speed of a button it will trade still.") 
+screenFreeze = 0
+screenFreezeCount = 0
+startupPreFreeze = 0
+
+toWrite = 0
+ret = ""
+ret2 = ""
+
+textbox1 = "Startup = " .. 0 .. "\n" .. 
+"Screen freeze = " .. 0 .. "\n" .. 
+"Advantage = " .. 0 .. "\n" ..
+"Total = " .. 0 .. "\n" ..
+"P1 damage dealt = " .. 0 .. "\n" ..
+"P1 stun dealt = " .. 0 .. "\n" ..
+"P1 meter gained = " .. 0 .. "\n"
+
+textbox2 = "Startup = " .. 0 .. "\n" .. 
+"Screen freeze = " .. 0 .. "\n" .. 
+"Advantage = " .. 0 .. "\n" ..
+"Total = " .. 0 .. "\n" ..
+"P2 damage dealt = " .. 0 .. "\n" ..
+"P2 stun dealth = " .. 0 .. "\n" ..
+"P2 meter gained = " .. 0 .. "\n"
+
+startupLast = 0
+startupLastOpp = 0
+screenFreezeLast = 0
+p1DamLast = 0
+p2DamLast = 0
+p1StunLast = 0
+p2StunLast = 0
+p1MeterGainLast = 0
+p2MeterGainLast = 0
+advLast = 0
+moveTotalLast = 0
+moveTotalLastOpp = 0
 
 while true do
 	emu.frameadvance();
@@ -45,45 +90,56 @@ while true do
 			currActOpp = prevAct
 		end
 		
+		
 		currAct = memory.read_u8(0xdba5d)
 		currActOpp = memory.read_u8(0xdbb99)
 		--console.log(currAct, prevAct, currActOpp, prevActOpp, notInNeutral, notInNeutralPrev)
 		if prevAct == 1 and currAct == 1 and prevActOpp == 1 and currActOpp == 1 and notInNeutral == 1 then
 			ret = "p1 advantage = " .. framesOfAct-1 - (framesOfActOpp-1) .. " move total = " .. inMove .. "\n"
+			advLast = framesOfAct-1 - (framesOfActOpp-1)
+			moveTotalLast = inMove
+			moveTotalLastOpp = inMoveOpp
 			
 			temp = memory.read_s16_be(0xdba92)
 			if p1HealthStart ~= temp then ret = ret .. "p1 dam = " .. p1HealthStart - temp .. " \n" end
+			p1DamLast = p1HealthStart - temp
 			temp = memory.read_s16_be(0xdba92+0x13c)
 			if p2HealthStart ~= temp then ret = ret .. "p2 dam = " .. p2HealthStart - temp .. " \n" end
-			
+			p2DamLast = p2HealthStart - temp
 			temp = memory.read_s16_be(0xdba96)
 			if p1StunStart ~= temp then ret = ret .. "p1 stun = " .. temp - p1StunStart .. " \n" end
-			
+			p1StunLast = temp - p1StunStart
 			temp = memory.read_s16_be(0xdba96+0x13c)
 			if p2StunStart ~= temp then ret = ret .. "p2 stun = " .. temp - p2StunStart .. " \n" end
-
+			p2StunLast = temp - p2StunStart
 			temp = memory.read_u8(0xdba9e)*800 + memory.read_u16_be(0xdba9c)
 			if (p1MeterBigStart * 800 + p1MeterSmallStart) ~= temp then 
 				ret = ret .. "p1 meter gain = " .. temp - (p1MeterBigStart*800+p1MeterSmallStart) .. "\n"
 			end
+			p1MeterGainLast = temp - (p1MeterBigStart*800+p1MeterSmallStart)
 			temp = memory.read_u8(0xdba9e+0x13c)*800 + memory.read_u16_be(0xdba9c+0x13c)
 			if p2MeterBigStart*800+p2MeterSmallStart ~= temp then 
 				ret = ret .. "p2 meter gain = " .. temp - (p2MeterBigStart*800+p2MeterSmallStart)
 			end
+			p2MeterGainLast = temp - (p2MeterBigStart*800+p2MeterSmallStart)
+			--gui.pixelText(100,100,ret)
 			
-			console.log(ret)
-			console.log("")
+			--console.log(ret)
+			--console.log("")
 			notInNeutral = 0
 			notInNeutralPrev = 0
 			framesOfAct = 0
 			framesOfActOpp = 0
 			inMove = 0
 			inMoveOpp = 0
+			screenFreezeCount = 0
+			toWrite = 1
 		end
 		
 		if currAct == 0 or currActOpp == 0 then notInNeutral = 1 end
 		if prevAct == 1 and currAct == 0 then notInNeutral = 1 end
 		if prevActOpp == 1 and currActOpp == 0 then notInNeutral = 1 end
+		
 		if notInNeutral == 1 and notInNeutralPrev ~= 1 then
 			notInNeutralPrev = 1
 			if healthRefill == 1 then
@@ -101,17 +157,57 @@ while true do
 			p2MeterSmallStart = p2MeterSmallPrev
 			--console.log("reset stats")
 		end
+		
 		if prevActOpp == 1 and currActOpp == 0 and currAct == 0 then 
-			console.log("startup = " .. inMove+framesOfAct) 
+			if screenFreezeCount > 0 then 
+				--console.log("startup = " .. startupPreFreeze .. "+" .. inMove+framesOfAct-startupPreFreeze)
+				--console.log("screen freeze lasted " .. screenFreezeCount .. " frames")
+				ret2 = "startup = " .. startupPreFreeze .. "+" .. inMove+framesOfAct-startupPreFreeze .. "\n" .. "screen freeze lasted " .. screenFreezeCount .. " frames"
+				startupLast = startupPreFreeze .. "+" .. inMove+framesOfAct-startupPreFreeze
+			else
+				--console.log("startup = " .. inMove+framesOfAct) 
+				ret2 = "startup = " .. inMove+framesOfAct
+				startupLast = inMove+framesOfAct
+			end
+			screenFreezeLast = screenFreezeCount
 			framesOfActOpp = 0
 			framesOfAct = 0
+			startupPreFreeze = 0
+			startupPreFreezeOpp = 0
+			toWrite = 1
 		end
+		if prevAct == 1 and currAct == 0 and currActOpp == 0 then 
+			if screenFreezeCount > 0 then 
+				--console.log("startup = " .. startupPreFreeze .. "+" .. inMove+framesOfAct-startupPreFreeze)
+				--console.log("screen freeze lasted " .. screenFreezeCount .. " frames")
+				ret2 = "startup (p2) = " .. startupPreFreezeOpp .. "+" .. inMoveOpp+framesOfActOpp-startupPreFreezeOpp .. "\n" .. "screen freeze lasted " .. screenFreezeCount .. " frames"
+				startupLastOpp = startupPreFreezeOpp .. "+" .. inMoveOpp+framesOfActOpp-startupPreFreezeOpp
+			else
+				--console.log("startup = " .. inMove+framesOfAct) 
+				ret2 = "startup (p2) = " .. inMoveOpp+framesOfActOpp
+				startupLastOpp = inMoveOpp+framesOfActOpp
+			end
+			screenFreezeLast = screenFreezeCount
+			framesOfActOpp = 0
+			framesOfAct = 0
+			startupPreFreeze = 0
+			startupPreFreezeOpp = 0
+			toWrite = 1
+		end
+		
 		if notInNeutral == 1 then
-			if currAct == 0 then inMove = inMove + 1 end
-			if currAct == 1 then framesOfAct = framesOfAct + 1 end
-			if currActOpp == 0 then inMoveOpp = inMoveOpp + 1 end
-			if currActOpp == 1 then framesOfActOpp = framesOfActOpp + 1 end
-			
+			screenFreeze = memory.read_u8(0xdbdf6)
+			if currAct == 0 and screenFreeze == 0 then inMove = inMove + 1 end
+			if currAct == 1 and screenFreeze == 0 then framesOfAct = framesOfAct + 1 end
+			if currActOpp == 0 and screenFreeze == 0 then inMoveOpp = inMoveOpp + 1 end
+			if currActOpp == 1 and screenFreeze == 0 then framesOfActOpp = framesOfActOpp + 1 end
+			if screenFreeze == 1 then 
+				if screenFreezeCount == 0 then 
+					startupPreFreeze = inMove+framesOfAct 
+					startupPreFreezeOpp = inMoveOpp+framesOfActOpp
+				end 
+				screenFreezeCount = screenFreezeCount + 1 
+			end
 		end
 		
 		p1MeterBigPrev = memory.read_u8(0xdba9e)
@@ -120,5 +216,36 @@ while true do
 		p2MeterSmallPrev = memory.read_u16_be(0xdba9c+0x13c)
 		prevAct = currAct
 		prevActOpp = currActOpp
+		
+		if writeToConsole == 1 then 
+			if toWrite == 1 then 
+				if ret2 ~= "" then console.log(ret2) end
+				if ret ~= "" then console.log(ret .. "\n") end
+				ret = ""
+				ret2 = ""
+			end
+		end
+		if writeToScreen == 1 then 
+			if toWrite == 1 then 
+				textbox1 = "Startup = " .. startupLast .. "\n" .. 
+				"Screen freeze = " .. screenFreezeLast .. "\n" .. 
+				"Advantage = " .. advLast .. "\n" ..
+				"Total = " .. moveTotalLast .. "\n" ..
+				"P1 damage dealt = " .. p2DamLast .. "\n" ..
+				"P1 stun dealt = " .. p2StunLast .. "\n" ..
+				"P1 meter gained = " .. p1MeterGainLast .. "\n"
+				
+				textbox2 = "Startup = " .. startupLastOpp .. "\n" .. 
+				"Screen freeze = " .. screenFreezeLast .. "\n" .. 
+				"Advantage = " .. advLast*(-1) .. "\n" ..
+				"Total = " .. moveTotalLastOpp .. "\n" ..
+				"P2 damage dealt = " .. p1DamLast .. "\n" ..
+				"P2 stun dealt = " .. p1StunLast .. "\n" ..
+				"P2 meter gained = " .. p2MeterGainLast .. "\n"
+			end
+			gui.pixelText(21,55,textbox1)
+			gui.pixelText(220,55,textbox2)
+		end
+		if toWrite == 1 then toWrite = 0 end
 	end
 end
