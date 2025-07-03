@@ -17,41 +17,41 @@ console.clear()
 console.log("Warning about frame advantage: both players go through 1 frame of idle at the end of all grounded recovery (including dash startup), you can block and nothing else (wakeup does not force this, wakeup dp is real). A move that is +9 on hit will only link with a move that has a startup <= 8, but a frame advantage of 0 means if both players press the same speed of a button it will trade still.\n\nYou can turn off/on console by setting writeToConsole = 0 or 1, as with writeToScreen = 0 or 1, and healthRefill = 0 or 1, at any time using the console") 
 
 
-prevAct = 2
-currAct = 2
-prevActOpp = 2
-currActOpp = 2
+local prevAct = 2
+local currAct = 2
+local prevActOpp = 2
+local currActOpp = 2
 
-inMove = 0
-inMoveOpp = 0
-framesOfAct = 0
-framesOfActOpp = 0
+local inMove = 0
+local inMoveOpp = 0
+local framesOfAct = 0
+local framesOfActOpp = 0
 
-notInNeutral = 0
-notInNeutralPrev = 0
+local notInNeutral = 0
+local notInNeutralPrev = 0
 
-p1HealthStart = 0
-p2HealthStart = 0
-p1StunStart = 0
-p2StunStart = 0
-p1MeterBigStart = 0
-p2MeterBigStart = 0
-p1MeterSmallStart = 0
-p2MeterSmallStart = 0
-p1MeterBigPrev = 0
-p2MeterBigPrev = 0
-p1MeterSmallPrev = 0
-p2MeterSmallPrev = 0
+local p1HealthStart = 0
+local p2HealthStart = 0
+local p1StunStart = 0
+local p2StunStart = 0
+local p1MeterBigStart = 0
+local p2MeterBigStart = 0
+local p1MeterSmallStart = 0
+local p2MeterSmallStart = 0
+local p1MeterBigPrev = 0
+local p2MeterBigPrev = 0
+local p1MeterSmallPrev = 0
+local p2MeterSmallPrev = 0
 
-screenFreeze = 0
-screenFreezeCount = 0
-startupPreFreeze = 0
+local screenFreeze = 0
+local screenFreezeCount = 0
+local startupPreFreeze = 0
 
-toWrite = 0
-ret = ""
-ret2 = ""
+local toWrite = 0
+local ret = ""
+local ret2 = ""
 
-textbox1 = "Startup = " .. 0 .. "\n" .. 
+local textbox1 = "Startup = " .. 0 .. "\n" .. 
 "Screen freeze = " .. 0 .. "\n" .. 
 "Advantage = " .. 0 .. "\n" ..
 "Total = " .. 0 .. "\n" ..
@@ -59,7 +59,7 @@ textbox1 = "Startup = " .. 0 .. "\n" ..
 "P1 stun dealt = " .. 0 .. "\n" ..
 "P1 meter gained = " .. 0 .. "\n"
 
-textbox2 = "Startup = " .. 0 .. "\n" .. 
+local textbox2 = "Startup = " .. 0 .. "\n" .. 
 "Screen freeze = " .. 0 .. "\n" .. 
 "Advantage = " .. 0 .. "\n" ..
 "Total = " .. 0 .. "\n" ..
@@ -67,18 +67,18 @@ textbox2 = "Startup = " .. 0 .. "\n" ..
 "P2 stun dealth = " .. 0 .. "\n" ..
 "P2 meter gained = " .. 0 .. "\n"
 
-startupLast = 0
-startupLastOpp = 0
-screenFreezeLast = 0
-p1DamLast = 0
-p2DamLast = 0
-p1StunLast = 0
-p2StunLast = 0
-p1MeterGainLast = 0
-p2MeterGainLast = 0
-advLast = 0
-moveTotalLast = 0
-moveTotalLastOpp = 0
+local startupLast = 0
+local startupLastOpp = 0
+local screenFreezeLast = 0
+local p1DamLast = 0
+local p2DamLast = 0
+local p1StunLast = 0
+local p2StunLast = 0
+local p1MeterGainLast = 0
+local p2MeterGainLast = 0
+local advLast = 0
+local moveTotalLast = 0
+local moveTotalLastOpp = 0
 
 while true do
 	emu.frameadvance();
