@@ -16,11 +16,11 @@ potential issues:
 	unblockables are untested, they might be throws and not show up
 --]]
 --the once loaded stuff
-p1Base = 0x0DBA00
-p2Base = 0x0DBB3C
-playerOffset = 0x13c
+local p1Base = 0x0DBA00
+local p2Base = 0x0DBB3C
+local playerOffset = 0x13c
 
-characterBaseAddress = { --index is the same as in game, which is found at p1Base / p2Base
+local characterBaseAddress = { --index is the same as in game, which is found at p1Base / p2Base
     [0] = 0x06B43C, --Yuko
     [1] = 0x06CAF4, --Kato
     [2] = 0x06E68C, --Mika 
@@ -36,44 +36,53 @@ characterBaseAddress = { --index is the same as in game, which is found at p1Bas
 }
 
 --colours
-lightGreen = 0xb000c000 --hurtbox
-lightGreenBG = 0x7000c000
-lightRed = 0xb0ff0000 --hitbox
-lightRedBG = 0x70ff0000
-white = 0xb0ffffff --currently invuln hurtbox (if I implement that)
-whiteBG = 0x70ffffff
+local lightGreen = 0xb000c000 --hurtbox
+local lightGreenBG = 0x7000c000
+local lightRed = 0xb0ff0000 --hitbox
+local lightRedBG = 0x70ff0000
+local white = 0xb0ffffff --currently invuln hurtbox (if I implement that)
+local whiteBG = 0x70ffffff
 
 --screen position for character point offsets (I'm just guessing what they should be off visuals
-pointOffsetH = 165
-pointOffsetV = 119
+local pointOffsetH = 165
+local pointOffsetV = 119
 --if it is wrong it's only a pixel off (v might be 2 off, it's harder to see)
 
 --the once per frame stuff
 --memory default is work ram high (starts at 0x06000000)
 function fn()
     --p1 stuff
-	hurtboxBase = characterBaseAddress[memory.read_u8(p1Base)] 
-	activeHurtboxBase = hurtboxBase + memory.read_u16_be(p1Base+0xC)*4 --pNBase*4 is the offset for the address
+	local hurtboxBase = characterBaseAddress[memory.read_u8(p1Base)] 
+	local activeHurtboxBase = hurtboxBase + memory.read_u16_be(p1Base+0xC)*4 --pNBase*4 is the offset for the address
 	activeHurtboxBase = memory.read_u32_be(activeHurtboxBase)
 	activeHurtboxBase = activeHurtboxBase - 0x06000000 --the saturn uses 06000000 to point to high ram, bizhawk doesn't
-	noBoxes = 0
+	local noBoxes = 0
 	if activeHurtboxBase < 0 then 
 		activeHurtboxBase = 0 
 		noBoxes = 1
 	end
-	hPos = memory.read_s32_be(p1Base+0x108) --h pos offset
+	local hPos = memory.read_s32_be(p1Base+0x108) --h pos offset
 	hPos = hPos / 65536
-	vPos = memory.read_s32_be(p1Base+0x10c) --v pos offset
+	local vPos = memory.read_s32_be(p1Base+0x10c) --v pos offset
 	vPos = vPos / 65536
-	numHurtboxes = memory.read_u8(activeHurtboxBase)
-	screenEdgeH = memory.read_s32_be(0x0DBdf0) --there are 2 screen pos variables, only diff is one is offset. 0x0db6a4 is 65536 to 20905984, 0x0dbdf0 is -10420224 to 10420224
+	local numHurtboxes = memory.read_u8(activeHurtboxBase)
+	local screenEdgeH = memory.read_s32_be(0x0DBdf0) --there are 2 screen pos variables, only diff is one is offset. 0x0db6a4 is 65536 to 20905984, 0x0dbdf0 is -10420224 to 10420224
 	screenEdgeH = screenEdgeH / 65536 --fixing resolution to match hurtbox location
-	screenEdgeV = memory.read_s32_be(0x0dbcc4)
+	local screenEdgeV = memory.read_s32_be(0x0dbcc4)
 	screenEdgeV = screenEdgeV / 65536
-	charPointHPos = hPos-screenEdgeH+pointOffsetH
-	charPointVPos = vPos-screenEdgeV+pointOffsetV
+	local charPointHPos = hPos-screenEdgeH+pointOffsetH
+	local charPointVPos = vPos-screenEdgeV+pointOffsetV
 	gui.drawRectangle(charPointHPos,charPointVPos,1,1,"white","white")
-	charWidth = 0
+	local charWidth = 0
+	local charHeight = 0
+	local color = ""
+	local colorBG = ""
+	local hori1 = 0
+	local hori2 = 0
+	local vert1 = 0
+	local vert2 = 0
+	local facing = 1
+	local temp = 0
 	for i = 0, numHurtboxes-1, 1 do
 		if noBoxes == 1 then break end
 		hori1 = memory.read_u8(activeHurtboxBase+1+4*i)
@@ -110,8 +119,8 @@ function fn()
 	end
 	
 	--hitboxes for p1
-	numHitboxes = memory.read_s8(p1Base+0x67)
-	activeHitboxBase = 0x0dbc80 --idk how to calculate this from pNBase, so hard coding it 
+	local numHitboxes = memory.read_s8(p1Base+0x67)
+	local activeHitboxBase = 0x0dbc80 --idk how to calculate this from pNBase, so hard coding it 
 	for i = 0, numHitboxes-1, 1 do
 		if memory.read_u8(0x0DBA66) == 0 then break end
 		hori1 = memory.read_s16_be(activeHitboxBase+0+i*8)
