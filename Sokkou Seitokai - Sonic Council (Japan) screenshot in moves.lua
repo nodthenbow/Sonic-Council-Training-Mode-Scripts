@@ -59,7 +59,7 @@ local characterName = { --index is the same as in game, which is found at p1Base
 	[10] = "TAi", --Traitorous Ai
 	[11] = "SNaoko" --Shadow Naoko
 }
---client.setscreenshotosd(true)
+client.setscreenshotosd(true)
 while true do
 	emu.frameadvance();
 	if memory.read_u8(0xdbef8) == 4 then --makes sure that we are in an active match
