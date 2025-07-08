@@ -4,14 +4,14 @@ Folder name: "Sokkou Seitokai - Sonic Council (Japan)"
 SHA256 checksum for data and names: e2394185d08792923044f912a263e71e7ca5d3a8f7bad234214a98ae74dd6490-00000009
 ]]
 --If it works on future versions, cool. If not, I'm probably not going to update it.
---doesn't work on some stuff (like fireballs, pushboxes) because I didn't want to do more REing
 
 --[[
 known issues:
-	throw height is wrong (it's infinite in game, I just made it a height of 20)
+	throw height is wrong (it's infinite in game, I just made it a height of 50)
 	invulnerability can be bypassed by some stuff (seems like a glitch in the game?)
+	some invuln turns off some collision, this isn't reflected anywhere
 potential issues:
-	collision box is weird
+	collision box is weird, seems correct but it is weird
 	throws may be a pixel longer than they actually are
 --]]
 --the once loaded stuff
@@ -186,7 +186,7 @@ function fn()
 		if memory.read_u8(0xdba4a) == 1 then
 			x1 = charPointHPos+hori1+(throwRange*-1) -1
 		end
-		gui.drawRectangle(x1,charPointVPos-20,throwRange,20,blue,blueBG)
+		gui.drawRectangle(x1,charPointVPos-50,throwRange,50,blue,blueBG)
 	end
 	
 	--fireballs (for both)
@@ -344,7 +344,7 @@ function fn()
 		if memory.read_u8(0xdba4a+0x13c) == 1 then
 			x1 = charPointHPos+hori1+(throwRange*-1) -1
 		end
-		gui.drawRectangle(x1,charPointVPos-20,throwRange,20,blue,blueBG)
+		gui.drawRectangle(x1,charPointVPos-50,throwRange,50,blue,blueBG)
 	end
 	
 end
