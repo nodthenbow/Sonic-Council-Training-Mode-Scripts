@@ -4,16 +4,15 @@ Folder name: "Sokkou Seitokai - Sonic Council (Japan)"
 SHA256 checksum for data and names: e2394185d08792923044f912a263e71e7ca5d3a8f7bad234214a98ae74dd6490-00000009
 ]]
 --If it works on future versions, cool. If not, I'm probably not going to update it.
---doesn't work on some stuff (like fireballs, pushboxes, throws) because I didn't want to do more REing
+--doesn't work on some stuff (like fireballs, pushboxes) because I didn't want to do more REing
 
 --[[
 known issues:
-	Kato's command grab doesn't show (it's probably an actual throw, unlike the other unblockables)
-	Invulnerability can be bypassed by some stuff (seems like a glitch in the game?)
+	throw height is wrong (it's infinite in game, I just made it a height of 20)
+	invulnerability can be bypassed by some stuff (seems like a glitch in the game?)
 potential issues:
-	supers (the were completely ignored while I was making this)
-	juggle states might show invuln incorrectly
-	unblockables are untested, they might be throws and not show up
+	collision box is weird
+	throws may be a pixel longer than they actually are
 --]]
 --the once loaded stuff
 local p1Base = 0x0DBA00
@@ -42,6 +41,13 @@ local lightRed = 0xb0ff0000 --hitbox
 local lightRedBG = 0x70ff0000
 local white = 0xb0ffffff --currently invuln hurtbox (if I implement that)
 local whiteBG = 0x70ffffff
+local yellow = 0xb0ffff00
+local yellowBG = 0x70ffff00
+local purple = 0xb0ff00ff
+local purpleBG = 0x70ff00ff
+local blue = 0xb00000ff
+local blueBG = 0x700000ff
+
 
 --screen position for character point offsets (I'm just guessing what they should be off visuals
 local pointOffsetH = 165
@@ -146,6 +152,77 @@ function fn()
 
 	end
 	
+	--collision boxes and throws
+	--dbb00 sw hori1 sw ver1?
+	hori1 = memory.read_s16_be(0xdbb00)
+	vert1 = memory.read_s16_be(0xdbb02)
+	hori2 = memory.read_s16_be(0xdbb04)
+	vert2 = memory.read_s16_be(0xdbb06)
+	
+	if hori1 > hori2 then
+		temp = hori2
+		hori2 = hori1
+		hori1 = temp
+	end
+	if vert1 > vert2 then
+		temp = vert2
+		vert2 = vert1
+		vert1 = temp
+	end
+	if memory.read_u8(0xdba4a) == 1 then
+		temp = hori1-hori2
+		hori1 = (hori1 * -1) + temp
+		hori2 = (hori2 * -1) + temp
+	end
+	colour = yellow
+	colourBG = yellowBG
+	
+	gui.drawRectangle(charPointHPos+hori1, charPointVPos+vert1, math.abs(hori1-hori2), math.abs(vert1-vert2), colour,colourBG)
+	
+	--throw stuff (uses collision boxes stuff)
+	if memory.read_s8(0x0dba83) ~= 0 then 
+		local throwRange = memory.read_s16_be(0x0dba86)
+		local x1 = charPointHPos+hori1+math.abs(hori1-hori2) + 1
+		if memory.read_u8(0xdba4a) == 1 then
+			x1 = charPointHPos+hori1+(throwRange*-1) -1
+		end
+		gui.drawRectangle(x1,charPointVPos-20,throwRange,20,blue,blueBG)
+	end
+	
+	--fireballs (for both)
+	local fbDraw = 0
+	local fbNotActive = 0
+	local fbArrayBase = 0x0dbcf0
+	for i = 0, 16, 1 do
+		fbDraw = memory.read_u8(fbArrayBase + (i*0x10))
+		fbDraw = fbDraw / 64
+		fbNotActive = memory.read_u8(fbArrayBase + 2+(i*0x10))
+		if fbDraw > 1 and fbNotActive ~= 1 then
+			hori1 = memory.read_s16_be(fbArrayBase +8 +(i*0x10))
+			vert1 = memory.read_s16_be(fbArrayBase +10 +(i*0x10))
+			hori2 = memory.read_s16_be(fbArrayBase +12 +(i*0x10))
+			vert2 = memory.read_s16_be(fbArrayBase +14 +(i*0x10))
+			hPos = memory.read_s16_be(fbArrayBase +4 +(i*0x10))
+			vPos = memory.read_s16_be(fbArrayBase +6 +(i*0x10))
+			
+			if hori1 > hori2 then
+				temp = hori2
+				hori2 = hori1
+				hori1 = temp
+			end
+			if vert1 > vert2 then
+				temp = vert2
+				vert2 = vert1
+				vert1 = temp
+			end
+			
+			colour = purple
+			colourBG = purpleBG
+			
+			gui.drawRectangle(hPos+hori1-screenEdgeH+pointOffsetH, vPos+vert1-screenEdgeV+pointOffsetV, math.abs(hori1-hori2), math.abs(vert1-vert2), colour,colourBG)
+		end
+	end
+	
 	
 	--p2 stuff 
 	hurtboxBase = characterBaseAddress[memory.read_u8(p2Base)] 
@@ -232,6 +309,43 @@ function fn()
 
 	end
 	
+	
+	--collision boxes and throws
+	--dbb00 sw hori1 sw ver1?
+	hori1 = memory.read_s16_be(0xdbb00+0x13c)
+	vert1 = memory.read_s16_be(0xdbb02+0x13c)
+	hori2 = memory.read_s16_be(0xdbb04+0x13c)
+	vert2 = memory.read_s16_be(0xdbb06+0x13c)
+	
+	if hori1 > hori2 then
+		temp = hori2
+		hori2 = hori1
+		hori1 = temp
+	end
+	if vert1 > vert2 then
+		temp = vert2
+		vert2 = vert1
+		vert1 = temp
+	end
+	if memory.read_u8(0xdba4a+0x13c) == 1 then
+		temp = hori1-hori2
+		hori1 = (hori1 * -1) + temp
+		hori2 = (hori2 * -1) + temp
+	end
+	colour = yellow
+	colourBG = yellowBG
+	
+	gui.drawRectangle(charPointHPos+hori1, charPointVPos+vert1, math.abs(hori1-hori2), math.abs(vert1-vert2), colour,colourBG)
+	
+	--throw stuff (uses collision boxes stuff)
+	if memory.read_s8(0x0dba83+0x13c) ~= 0 then 
+		local throwRange = memory.read_s16_be(0x0dba86+0x13c)
+		local x1 = charPointHPos+hori1+math.abs(hori1-hori2) + 1
+		if memory.read_u8(0xdba4a+0x13c) == 1 then
+			x1 = charPointHPos+hori1+(throwRange*-1) -1
+		end
+		gui.drawRectangle(x1,charPointVPos-20,throwRange,20,blue,blueBG)
+	end
 	
 end
 console.clear()
