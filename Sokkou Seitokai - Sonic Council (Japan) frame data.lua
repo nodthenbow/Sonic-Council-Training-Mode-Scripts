@@ -5,8 +5,7 @@ i might make this count all startup, active, and recovery at some point
 probs will investigate the other actionable flag that is +1 offset from the used flag
 (pretty sure it's just for rolls and guard cancel or something, maybe the buffer too?)
 
-For some reason it really lags the game out if you load the hitboxes script while this script is running. 
-No clue why, but the fix is to just run that script before this script starts running
+doesn't get fireball advantage properly
 --]]
 
 healthRefill = 1 --change to 0 to turn off auto health refill
@@ -143,8 +142,10 @@ while true do
 		if notInNeutral == 1 and notInNeutralPrev ~= 1 then
 			notInNeutralPrev = 1
 			if healthRefill == 1 then
-				if memory.read_s16_be(0xdba92) < 700 then memory.write_s16_be(0xdba92, 700) end
-				if memory.read_s16_be(0xdbbce) < 700 then memory.write_s16_be(0xdba92+0x13c, 700) end
+				local maxH = memory.read_s16_be(0xdba94)
+				if memory.read_s16_be(0xdba92) < maxH then memory.write_s16_be(0xdba92, maxH) end
+				maxH = memory.read_s16_be(0xdba94+0x13c)
+				if memory.read_s16_be(0xdbbce) < maxH then memory.write_s16_be(0xdba92+0x13c, maxH) end
 				--1000 is the highest health char's health (700 is lowest, change it to that if issues occur)
 			end
 			p1HealthStart = memory.read_s16_be(0xdba92)
@@ -226,6 +227,8 @@ while true do
 			end
 		end
 		if writeToScreen == 1 then 
+			gui.pixelText(81,10,"Health: " .. memory.read_s16_be(0xdba92) .. "/" .. memory.read_s16_be(0xdba94) .. "\n" .. "Stun: ".. memory.read_s16_be(0xdba96) .. "/" .. memory.read_s16_be(0xdba98) )
+			gui.pixelText(183,10,"Health: " .. memory.read_s16_be(0xdba92+0x13c) .. "/" .. memory.read_s16_be(0xdba94+0x13c) .. "\n" .. "Stun: ".. memory.read_s16_be(0xdba96+0x13c) .. "/" .. memory.read_s16_be(0xdba98+0x13c) )
 			if toWrite == 1 then 
 				textbox1 = "Startup = " .. startupLast .. "\n" .. 
 				"Screen freeze = " .. screenFreezeLast .. "\n" .. 
