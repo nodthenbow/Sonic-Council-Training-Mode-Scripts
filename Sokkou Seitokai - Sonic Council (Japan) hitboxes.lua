@@ -57,6 +57,10 @@ local pointOffsetV = 119
 --the once per frame stuff
 --memory default is work ram high (starts at 0x06000000)
 function fn()
+	if memory.read_u8(0xdbef8) == 0xD then 
+		gui.clearGraphics()
+		return 
+	end
     --p1 stuff
 	local hurtboxBase = characterBaseAddress[memory.read_u8(p1Base)] 
 	local activeHurtboxBase = hurtboxBase + memory.read_u16_be(p1Base+0xC)*4 --pNBase*4 is the offset for the address
