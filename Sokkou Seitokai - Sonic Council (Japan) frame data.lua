@@ -6,6 +6,7 @@ probs will investigate the other actionable flag that is +1 offset from the used
 (pretty sure it's just for rolls and guard cancel or something, maybe the buffer too?)
 
 doesn't get fireball advantage properly
+juggle advantage is funky if the opponent was invuln multiple times in one string of actions 
 --]]
 
 healthRefill = 1 --change to 0 to turn off auto health refill
@@ -46,9 +47,12 @@ local screenFreeze = 0
 local screenFreezeCount = 0
 local startupPreFreeze = 0
 
+local p1InvulnCount = 0
+local p2InvulnCount = 0
+
 local toWrite = 0
-local ret = ""
-local ret2 = ""
+--local ret = ""
+--local ret2 = ""
 
 local textbox1 = "Startup = " .. 0 .. "\n" .. 
 "Screen freeze = " .. 0 .. "\n" .. 
@@ -76,6 +80,7 @@ local p2StunLast = 0
 local p1MeterGainLast = 0
 local p2MeterGainLast = 0
 local advLast = 0
+local advLastOpp = 0
 local moveTotalLast = 0
 local moveTotalLastOpp = 0
 
@@ -90,36 +95,49 @@ while true do
 		end
 		
 		
-		currAct = memory.read_u8(0xdba5d)
-		currActOpp = memory.read_u8(0xdbb99)
+		currAct = memory.read_u8(0xdba5d) --flag that is true if the character is actionable
+		currActOpp = memory.read_u8(0xdbb99) --same flag but for p2 (the offset is 0x13c, same as most stuff)
 		--console.log(currAct, prevAct, currActOpp, prevActOpp, notInNeutral, notInNeutralPrev)
 		if prevAct == 1 and currAct == 1 and prevActOpp == 1 and currActOpp == 1 and notInNeutral == 1 then
-			ret = "p1 advantage = " .. framesOfAct-1 - (framesOfActOpp-1) .. " move total = " .. inMove .. "\n"
-			advLast = framesOfAct-1 - (framesOfActOpp-1)
+			--this means something happened and it should populate the frame data output
+			advLast = framesOfAct-1 - (framesOfActOpp-1) --we waited an extra frame
+			advLastOpp = advLast*(-1) --p2 advantage is the negative of p1 advantage
+			
+			if p1InvulnCount > 0 then --calculates juggle advantage for p2
+				if advLastOpp-p1InvulnCount > 0 then --don't show negative juggle advantages
+					advLastOpp = "" .. advLastOpp .. " (" .. advLastOpp-p1InvulnCount .. "j)" 
+				end
+			end
+			if p2InvulnCount > 0 then --same as above but for p1 
+				if advLast-p2InvulnCount > 0 then
+					advLast = "" .. advLast .. " (" .. advLast-p2InvulnCount .. "j)" 
+				end
+			end
+			
 			moveTotalLast = inMove
 			moveTotalLastOpp = inMoveOpp
 			
-			temp = memory.read_s16_be(0xdba92)
-			if p1HealthStart ~= temp then ret = ret .. "p1 dam = " .. p1HealthStart - temp .. " \n" end
+			temp = memory.read_s16_be(0xdba92) --p1 health
+			--if p1HealthStart ~= temp then ret = ret .. "p1 dam = " .. p1HealthStart - temp .. " \n" end
 			p1DamLast = p1HealthStart - temp
-			temp = memory.read_s16_be(0xdba92+0x13c)
-			if p2HealthStart ~= temp then ret = ret .. "p2 dam = " .. p2HealthStart - temp .. " \n" end
+			temp = memory.read_s16_be(0xdba92+0x13c) --p2 health
+			--if p2HealthStart ~= temp then ret = ret .. "p2 dam = " .. p2HealthStart - temp .. " \n" end
 			p2DamLast = p2HealthStart - temp
-			temp = memory.read_s16_be(0xdba96)
-			if p1StunStart ~= temp then ret = ret .. "p1 stun = " .. temp - p1StunStart .. " \n" end
+			temp = memory.read_s16_be(0xdba96) --p1 stun
+			--if p1StunStart ~= temp then ret = ret .. "p1 stun = " .. temp - p1StunStart .. " \n" end
 			p1StunLast = temp - p1StunStart
-			temp = memory.read_s16_be(0xdba96+0x13c)
-			if p2StunStart ~= temp then ret = ret .. "p2 stun = " .. temp - p2StunStart .. " \n" end
+			temp = memory.read_s16_be(0xdba96+0x13c) --p2 stun
+			--if p2StunStart ~= temp then ret = ret .. "p2 stun = " .. temp - p2StunStart .. " \n" end
 			p2StunLast = temp - p2StunStart
-			temp = memory.read_u8(0xdba9e)*800 + memory.read_u16_be(0xdba9c)
-			if (p1MeterBigStart * 800 + p1MeterSmallStart) ~= temp then 
+			temp = memory.read_u8(0xdba9e)*800 + memory.read_u16_be(0xdba9c) --p1 meter big and small
+			--[[if (p1MeterBigStart * 800 + p1MeterSmallStart) ~= temp then 
 				ret = ret .. "p1 meter gain = " .. temp - (p1MeterBigStart*800+p1MeterSmallStart) .. "\n"
-			end
+			end--]]
 			p1MeterGainLast = temp - (p1MeterBigStart*800+p1MeterSmallStart)
-			temp = memory.read_u8(0xdba9e+0x13c)*800 + memory.read_u16_be(0xdba9c+0x13c)
-			if p2MeterBigStart*800+p2MeterSmallStart ~= temp then 
+			temp = memory.read_u8(0xdba9e+0x13c)*800 + memory.read_u16_be(0xdba9c+0x13c) --p2 meter
+			--[[if p2MeterBigStart*800+p2MeterSmallStart ~= temp then 
 				ret = ret .. "p2 meter gain = " .. temp - (p2MeterBigStart*800+p2MeterSmallStart)
-			end
+			end--]]
 			p2MeterGainLast = temp - (p2MeterBigStart*800+p2MeterSmallStart)
 			--gui.pixelText(100,100,ret)
 			
@@ -132,6 +150,8 @@ while true do
 			inMove = 0
 			inMoveOpp = 0
 			screenFreezeCount = 0
+			p1InvulnCount = 0
+			p2InvulnCount = 0
 			toWrite = 1
 		end
 		
@@ -163,11 +183,9 @@ while true do
 			if screenFreezeCount > 0 then 
 				--console.log("startup = " .. startupPreFreeze .. "+" .. inMove+framesOfAct-startupPreFreeze)
 				--console.log("screen freeze lasted " .. screenFreezeCount .. " frames")
-				ret2 = "startup = " .. startupPreFreeze .. "+" .. inMove+framesOfAct-startupPreFreeze .. "\n" .. "screen freeze lasted " .. screenFreezeCount .. " frames"
 				startupLast = startupPreFreeze .. "+" .. inMove+framesOfAct-startupPreFreeze
 			else
 				--console.log("startup = " .. inMove+framesOfAct) 
-				ret2 = "startup = " .. inMove+framesOfAct
 				startupLast = inMove+framesOfAct
 			end
 			screenFreezeLast = screenFreezeCount
@@ -181,11 +199,9 @@ while true do
 			if screenFreezeCount > 0 then 
 				--console.log("startup = " .. startupPreFreeze .. "+" .. inMove+framesOfAct-startupPreFreeze)
 				--console.log("screen freeze lasted " .. screenFreezeCount .. " frames")
-				ret2 = "startup (p2) = " .. startupPreFreezeOpp .. "+" .. inMoveOpp+framesOfActOpp-startupPreFreezeOpp .. "\n" .. "screen freeze lasted " .. screenFreezeCount .. " frames"
 				startupLastOpp = startupPreFreezeOpp .. "+" .. inMoveOpp+framesOfActOpp-startupPreFreezeOpp
 			else
 				--console.log("startup = " .. inMove+framesOfAct) 
-				ret2 = "startup (p2) = " .. inMoveOpp+framesOfActOpp
 				startupLastOpp = inMoveOpp+framesOfActOpp
 			end
 			screenFreezeLast = screenFreezeCount
@@ -209,6 +225,8 @@ while true do
 				end 
 				screenFreezeCount = screenFreezeCount + 1 
 			end
+			if memory.read_s8(0x0DBA59) == 1 then p1InvulnCount = p1InvulnCount + 1 end
+			if memory.read_s8(0x0DBA59+0x13c) == 1 then p2InvulnCount = p2InvulnCount + 1 end
 		end
 		
 		p1MeterBigPrev = memory.read_u8(0xdba9e)
@@ -220,15 +238,30 @@ while true do
 		
 		if writeToConsole == 1 then 
 			if toWrite == 1 then 
-				if ret2 ~= "" then console.log(ret2) end
-				if ret ~= "" then console.log(ret .. "\n") end
-				ret = ""
-				ret2 = ""
+				textbox1 = "Startup = " .. startupLast .. "\n" .. 
+				"Screen freeze = " .. screenFreezeLast .. "\n" .. 
+				"Advantage = " .. advLast .. "\n" ..
+				"Total = " .. moveTotalLast .. "\n" ..
+				"P1 damage dealt = " .. p2DamLast .. "\n" ..
+				"P1 stun dealt = " .. p2StunLast .. "\n" ..
+				"P1 meter gained = " .. p1MeterGainLast .. "\n"
+				
+				textbox2 = "Startup = " .. startupLastOpp .. "\n" .. 
+				"Screen freeze = " .. screenFreezeLast .. "\n" .. 
+				"Advantage = " .. advLastOpp .. "\n" ..
+				"Total = " .. moveTotalLastOpp .. "\n" ..
+				"P2 damage dealt = " .. p1DamLast .. "\n" ..
+				"P2 stun dealt = " .. p1StunLast .. "\n" ..
+				"P2 meter gained = " .. p2MeterGainLast .. "\n"
+				console.log(textbox1)
+				console.log(textbox2)
 			end
 		end
 		if writeToScreen == 1 then 
 			gui.pixelText(81,10,"Health: " .. memory.read_s16_be(0xdba92) .. "/" .. memory.read_s16_be(0xdba94) .. "\n" .. "Stun: ".. memory.read_s16_be(0xdba96) .. "/" .. memory.read_s16_be(0xdba98) )
 			gui.pixelText(183,10,"Health: " .. memory.read_s16_be(0xdba92+0x13c) .. "/" .. memory.read_s16_be(0xdba94+0x13c) .. "\n" .. "Stun: ".. memory.read_s16_be(0xdba96+0x13c) .. "/" .. memory.read_s16_be(0xdba98+0x13c) )
+			gui.pixelText(25,225,memory.read_u16_be(0xdba9c)) --p1 meter small number
+			gui.pixelText(289,225,memory.read_u16_be(0xdba9c+0x13c)) --p2 meter small number
 			if toWrite == 1 then 
 				textbox1 = "Startup = " .. startupLast .. "\n" .. 
 				"Screen freeze = " .. screenFreezeLast .. "\n" .. 
@@ -240,7 +273,7 @@ while true do
 				
 				textbox2 = "Startup = " .. startupLastOpp .. "\n" .. 
 				"Screen freeze = " .. screenFreezeLast .. "\n" .. 
-				"Advantage = " .. advLast*(-1) .. "\n" ..
+				"Advantage = " .. advLastOpp .. "\n" ..
 				"Total = " .. moveTotalLastOpp .. "\n" ..
 				"P2 damage dealt = " .. p1DamLast .. "\n" ..
 				"P2 stun dealt = " .. p1StunLast .. "\n" ..
