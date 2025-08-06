@@ -201,7 +201,7 @@ while true do
 			--console.log("reset stats")
 		end
 		
-		if prevActOpp == 1 and currActOpp == 0 --[[and currAct == 0]] then  --p1 startup calculator
+		if prevActOpp == 1 and currActOpp == 0 --[[and currAct == 0]] then  --p2 startup calculator
 			if screenFreezeCount > 0 then 
 				--console.log("startup = " .. startupPreFreeze .. "+" .. inMove+framesOfAct-startupPreFreeze)
 				--console.log("screen freeze lasted " .. screenFreezeCount .. " frames")
@@ -213,14 +213,13 @@ while true do
 			if currAct == 0 and fbActive == 0 then 
 				screenFreezeLast = screenFreezeCount
 				framesOfActOpp = 0
-				framesOfAct = 0
 				startupPreFreeze = 0
 				startupPreFreezeOpp = 0
 			end
-			framesOfActOpp = 0
+			framesOfAct = 0
 			toWrite = 1
 		end
-		if prevAct == 1 and currAct == 0 --[[and currActOpp == 0]] then --p2 startup calculator
+		if prevAct == 1 and currAct == 0 --[[and currActOpp == 0]] then --p1 startup calculator
 			if screenFreezeCount > 0 then 
 				--console.log("startup = " .. startupPreFreeze .. "+" .. inMove+framesOfAct-startupPreFreeze)
 				--console.log("screen freeze lasted " .. screenFreezeCount .. " frames")
@@ -235,7 +234,7 @@ while true do
 				startupPreFreeze = 0
 				startupPreFreezeOpp = 0
 			end
-			framesOfAct = 0
+			framesOfActOpp = 0
 			toWrite = 1
 		end
 		
