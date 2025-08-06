@@ -173,7 +173,7 @@ while true do
 			fbDraw = memory.read_u8(fbArrayBase + (i*0x10))
 			fbDraw = fbDraw / 64 --matches the in game logic that determines if a fb is active
 			fbNotActive = memory.read_u8(fbArrayBase + 2+(i*0x10))
-			if debugInfo == 1 then gui.pixelText(5+(math.ceil(math.floor(i/8))*65),100+((math.fmod(i,8)*20)),"\nfbActive = " .. fbActive .. "\nfbDraw = " .. fbDraw .. " " .. i) end
+			if debugInfo >= 2 then gui.pixelText(5+(math.ceil(math.floor(i/8))*65),100+((math.fmod(i,8)*20)),"\nfbActive = " .. fbActive .. "\nfbDraw = " .. fbDraw .. " " .. i) end
 			if fbDraw > 2 and fbNotActive ~= 1 then
 				notInNeutral = 1
 				fbActive = 1
@@ -210,14 +210,15 @@ while true do
 				--console.log("startup = " .. inMove+framesOfAct) 
 				startupLast = inMove+framesOfAct
 			end
-			--if fbActive == 0 then 
-			screenFreezeLast = screenFreezeCount
+			if currAct == 0 and fbActive == 0 then 
+				screenFreezeLast = screenFreezeCount
+				framesOfActOpp = 0
+				framesOfAct = 0
+				startupPreFreeze = 0
+				startupPreFreezeOpp = 0
+			end
 			framesOfActOpp = 0
-			framesOfAct = 0
-			startupPreFreeze = 0
-			startupPreFreezeOpp = 0
 			toWrite = 1
-			--end
 		end
 		if prevAct == 1 and currAct == 0 --[[and currActOpp == 0]] then --p2 startup calculator
 			if screenFreezeCount > 0 then 
@@ -228,14 +229,14 @@ while true do
 				--console.log("startup = " .. inMove+framesOfAct) 
 				startupLastOpp = inMoveOpp+framesOfActOpp
 			end
-			--if fbActive == 0 then
-			screenFreezeLast = screenFreezeCount
-			framesOfActOpp = 0
+			if currActOpp == 0 and fbActive == 0 then
+				screenFreezeLast = screenFreezeCount
+				framesOfActOpp = 0
+				startupPreFreeze = 0
+				startupPreFreezeOpp = 0
+			end
 			framesOfAct = 0
-			startupPreFreeze = 0
-			startupPreFreezeOpp = 0
 			toWrite = 1
-			--end
 		end
 		
 		if notInNeutral == 1 then
@@ -259,7 +260,7 @@ while true do
 			end --very hacky fix to ai's throw not working
 		end
 		
-		if debugInfo == 1 then gui.pixelText(120,50,
+		if debugInfo >= 1 then gui.pixelText(120,50,
 			"notInNeutral = " .. notInNeutral .. 
 			"\nnotInNeutralPrev = " .. notInNeutralPrev ..
 			"\ncurrAct = " .. currAct ..
