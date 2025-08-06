@@ -5,7 +5,9 @@ i might make this count all startup, active, and recovery at some point
 probs will investigate the other actionable flag that is +1 offset from the used flag
 (pretty sure it's just for rolls and guard cancel or something, maybe the buffer too?)
 
-doesn't get fireball advantage properly
+you can mess with the startup number for the other player with fireballs and stuff, but it makes it easier to get startup for delayed fireballs like naoko's c214K moves
+advantage on delayed fireballs is just the hitstun/blockstun of the fireball, you can figure out the real advantage by taking startup, minus the total on whiff, plus advantage on hit/block
+naoko's c236k is still wrong, but that's very hard to fix because the fireball spawns way after the move "ends"
 juggle advantage is funky if the opponent was invuln multiple times in one string of actions 
 --]]
 
@@ -16,6 +18,7 @@ writeToScreen = 1 -- change to 0 to turn off writing to screen
 console.clear()
 console.log("Warning about frame advantage: both players go through 1 frame of idle at the end of all grounded recovery (including dash startup), you can block and nothing else (wakeup does not force this, wakeup dp is real). A move that is +9 on hit will only link with a move that has a startup <= 8, but a frame advantage of 0 means if both players press the same speed of a button it will trade still.\n\nYou can turn off/on console by setting writeToConsole = 0 or 1, as with writeToScreen = 0 or 1, and healthRefill = 0 or 1, at any time using the console") 
 
+local debugInfo = 0
 
 local prevAct = 2
 local currAct = 2
@@ -83,6 +86,10 @@ local advLast = 0
 local advLastOpp = 0
 local moveTotalLast = 0
 local moveTotalLastOpp = 0
+local fbDraw = 0
+local fbNotActive = 0
+local fbArrayBase = 0x0dbcf0
+local fbActive = 0
 
 while true do
 	emu.frameadvance();
@@ -98,7 +105,7 @@ while true do
 		currAct = memory.read_u8(0xdba5d) --flag that is true if the character is actionable
 		currActOpp = memory.read_u8(0xdbb99) --same flag but for p2 (the offset is 0x13c, same as most stuff)
 		--console.log(currAct, prevAct, currActOpp, prevActOpp, notInNeutral, notInNeutralPrev)
-		if prevAct == 1 and currAct == 1 and prevActOpp == 1 and currActOpp == 1 and notInNeutral == 1 then
+		if prevAct == 1 and currAct == 1 and prevActOpp == 1 and currActOpp == 1 and notInNeutral == 1 and fbActive ~= 1 then
 			--this means something happened and it should populate the frame data output
 			advLast = framesOfAct-1 - (framesOfActOpp-1) --we waited an extra frame
 			advLastOpp = advLast*(-1) --p2 advantage is the negative of p1 advantage
@@ -158,6 +165,19 @@ while true do
 		if currAct == 0 or currActOpp == 0 then notInNeutral = 1 end
 		if prevAct == 1 and currAct == 0 then notInNeutral = 1 end
 		if prevActOpp == 1 and currActOpp == 0 then notInNeutral = 1 end
+		--if fireballs are active
+		fbActive = 0
+		for i = 0, 15, 1 do
+			fbDraw = memory.read_u8(fbArrayBase + (i*0x10))
+			fbDraw = fbDraw / 64 --matches the in game logic that determines if a fb is active
+			fbNotActive = memory.read_u8(fbArrayBase + 2+(i*0x10))
+			if debugInfo == 1 then gui.pixelText(5+(math.ceil(math.floor(i/8))*65),100+((math.fmod(i,8)*20)),"\nfbActive = " .. fbActive .. "\nfbDraw = " .. fbDraw .. " " .. i) end
+			if fbDraw > 2 and fbNotActive ~= 1 then
+				notInNeutral = 1
+				fbActive = 1
+				break
+			end
+		end
 		
 		if notInNeutral == 1 and notInNeutralPrev ~= 1 then
 			notInNeutralPrev = 1
@@ -179,7 +199,7 @@ while true do
 			--console.log("reset stats")
 		end
 		
-		if prevActOpp == 1 and currActOpp == 0 and currAct == 0 then 
+		if prevActOpp == 1 and currActOpp == 0 --[[and currAct == 0]] then  --p1 startup calculator
 			if screenFreezeCount > 0 then 
 				--console.log("startup = " .. startupPreFreeze .. "+" .. inMove+framesOfAct-startupPreFreeze)
 				--console.log("screen freeze lasted " .. screenFreezeCount .. " frames")
@@ -188,14 +208,16 @@ while true do
 				--console.log("startup = " .. inMove+framesOfAct) 
 				startupLast = inMove+framesOfAct
 			end
+			--if fbActive == 0 then 
 			screenFreezeLast = screenFreezeCount
 			framesOfActOpp = 0
 			framesOfAct = 0
 			startupPreFreeze = 0
 			startupPreFreezeOpp = 0
 			toWrite = 1
+			--end
 		end
-		if prevAct == 1 and currAct == 0 and currActOpp == 0 then 
+		if prevAct == 1 and currAct == 0 --[[and currActOpp == 0]] then --p2 startup calculator
 			if screenFreezeCount > 0 then 
 				--console.log("startup = " .. startupPreFreeze .. "+" .. inMove+framesOfAct-startupPreFreeze)
 				--console.log("screen freeze lasted " .. screenFreezeCount .. " frames")
@@ -204,12 +226,14 @@ while true do
 				--console.log("startup = " .. inMove+framesOfAct) 
 				startupLastOpp = inMoveOpp+framesOfActOpp
 			end
+			--if fbActive == 0 then
 			screenFreezeLast = screenFreezeCount
 			framesOfActOpp = 0
 			framesOfAct = 0
 			startupPreFreeze = 0
 			startupPreFreezeOpp = 0
 			toWrite = 1
+			--end
 		end
 		
 		if notInNeutral == 1 then
@@ -227,6 +251,28 @@ while true do
 			end
 			if memory.read_s8(0x0DBA59) == 1 then p1InvulnCount = p1InvulnCount + 1 end
 			if memory.read_s8(0x0DBA59+0x13c) == 1 then p2InvulnCount = p2InvulnCount + 1 end
+		end
+		
+		if debugInfo == 1 then gui.pixelText(120,50,
+			"notInNeutral = " .. notInNeutral .. 
+			"\nnotInNeutralPrev = " .. notInNeutralPrev ..
+			"\ncurrAct = " .. currAct ..
+			"\ncurrActOpp = " .. currActOpp ..
+			"\nprevAct = " .. prevAct ..
+			"\nprevActOpp = " .. prevActOpp ..
+			"\nframesOfAct = " .. framesOfAct ..
+			"\nframesOfActOpp = ".. framesOfActOpp ..
+			"\ninMove = " .. inMove ..
+			"\ninMoveOpp = " .. inMoveOpp ..
+			"\nscreenFreezeCount = " .. screenFreezeCount ..
+			"\np1InvulnCount = " .. p1InvulnCount ..
+			"\np2InvulnCount = " .. p2InvulnCount ..
+			"\nstartupPreFreeze = " .. startupPreFreeze ..
+			"\nstartupPreFreezeOpp = " .. startupPreFreezeOpp ..
+			"\nfbActive = " .. fbActive .. 
+			"\nfbDraw = " .. fbDraw .. 
+			"\nfbNotActive = " .. fbNotActive ..
+			"\ntoWrite = " .. toWrite)
 		end
 		
 		p1MeterBigPrev = memory.read_u8(0xdba9e)
