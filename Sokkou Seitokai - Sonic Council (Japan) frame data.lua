@@ -9,6 +9,8 @@ you can mess with the startup number for the other player with fireballs and stu
 advantage on delayed fireballs is just the hitstun/blockstun of the fireball, you can figure out the real advantage by taking startup, minus the total on whiff, plus advantage on hit/block
 naoko's c236k is still wrong, but that's very hard to fix because the fireball spawns way after the move "ends"
 juggle advantage is funky if the opponent was invuln multiple times in one string of actions 
+juggle is just opp advantage frames - invuln frames, it doesn't actually care about juggles
+wouldn't work with ai throw because they are invuln twice, so there's a hacky fix for that in place
 --]]
 
 healthRefill = 1 --change to 0 to turn off auto health refill
@@ -112,12 +114,12 @@ while true do
 			
 			if p1InvulnCount > 0 then --calculates juggle advantage for p2
 				if advLastOpp-p1InvulnCount > 0 then --don't show negative juggle advantages
-					advLastOpp = "" .. advLastOpp .. " (" .. advLastOpp-p1InvulnCount .. "j)" 
+					advLastOpp = "" .. advLastOpp .. " (" .. advLastOpp-p1InvulnCount-1 .. "j)" 
 				end
 			end
 			if p2InvulnCount > 0 then --same as above but for p1 
 				if advLast-p2InvulnCount > 0 then
-					advLast = "" .. advLast .. " (" .. advLast-p2InvulnCount .. "j)" 
+					advLast = "" .. advLast .. " (" .. advLast-p2InvulnCount-1 .. "j)" 
 				end
 			end
 			
@@ -251,6 +253,10 @@ while true do
 			end
 			if memory.read_s8(0x0DBA59) == 1 then p1InvulnCount = p1InvulnCount + 1 end
 			if memory.read_s8(0x0DBA59+0x13c) == 1 then p2InvulnCount = p2InvulnCount + 1 end
+			if memory.read_s8(0x0DBA59) == 1 and memory.read_s8(0x0DBA59+0x13c) == 1 then 
+				p1InvulnCount = p1InvulnCount - 1
+				p2InvulnCount = p2InvulnCount - 1
+			end --very hacky fix to ai's throw not working
 		end
 		
 		if debugInfo == 1 then gui.pixelText(120,50,
