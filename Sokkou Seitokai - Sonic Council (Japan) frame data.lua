@@ -174,7 +174,7 @@ while true do
 			fbDraw = fbDraw / 64 --matches the in game logic that determines if a fb is active
 			fbNotActive = memory.read_u8(fbArrayBase + 2+(i*0x10))
 			if debugInfo >= 2 then gui.pixelText(5+(math.ceil(math.floor(i/8))*65),100+((math.fmod(i,8)*20)),"\nfbActive = " .. fbActive .. "\nfbDraw = " .. fbDraw .. " " .. i) end
-			if fbDraw > 2 and fbNotActive ~= 1 then
+			if fbDraw >= 2 and fbNotActive ~= 1 then --game checks for floor(fbDraw)>1
 				notInNeutral = 1
 				fbActive = 1
 				break
