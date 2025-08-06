@@ -121,7 +121,7 @@ function fn()
 		charHeight = memory.read_s16_be(p1Base+0x30)
 		colour = lightGreen
 		colourBG = lightGreenBG
-		if memory.read_s8(p1Base+0x59) == 1 then
+		if memory.read_s8(p1Base+0x59) == 1 then --invuln flag
 			colour = white
 			colourBG = whiteBG
 		end
@@ -193,15 +193,15 @@ function fn()
 		gui.drawRectangle(x1,charPointVPos-50,throwRange,50,blue,blueBG)
 	end
 	
-	--fireballs (for both)
+	--fireballs (for both, because it's just the one fireball table)
 	local fbDraw = 0
 	local fbNotActive = 0
 	local fbArrayBase = 0x0dbcf0
-	for i = 0, 16, 1 do
+	for i = 0, 15, 1 do --recheck this at some point, it might be 17 long 
 		fbDraw = memory.read_u8(fbArrayBase + (i*0x10))
-		fbDraw = fbDraw / 64
+		fbDraw = fbDraw / 64 --matches the in game logic that determines if a fb is active
 		fbNotActive = memory.read_u8(fbArrayBase + 2+(i*0x10))
-		if fbDraw > 1 and fbNotActive ~= 1 then
+		if fbDraw > 2 and fbNotActive ~= 1 then --recheck that it is > 2
 			hori1 = memory.read_s16_be(fbArrayBase +8 +(i*0x10))
 			vert1 = memory.read_s16_be(fbArrayBase +10 +(i*0x10))
 			hori2 = memory.read_s16_be(fbArrayBase +12 +(i*0x10))
@@ -276,7 +276,7 @@ function fn()
 		charHeight = memory.read_s16_be(p2Base+0x30)
 		colour = lightGreen
 		colourBG = lightGreenBG
-		if memory.read_s8(p1Base+0x59+0x13c) == 1 then
+		if memory.read_s8(p1Base+0x59+0x13c) == 1 then --invuln flag 
 			colour = white
 			colourBG = whiteBG
 		end
