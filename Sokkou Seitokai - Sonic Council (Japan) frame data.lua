@@ -18,7 +18,7 @@ writeToConsole = 0 -- change to 0 to turn off writing to console
 writeToScreen = 1 -- change to 0 to turn off writing to screen
 
 console.clear()
-console.log("Warning about frame advantage: both players go through 1 frame of idle at the end of all grounded recovery (including dash startup), you can block and nothing else (wakeup does not force this, wakeup dp is real). A move that is +9 on hit will only link with a move that has a startup <= 8, but a frame advantage of 0 means if both players press the same speed of a button it will trade still.\n\nYou can turn off/on console by setting writeToConsole = 0 or 1, as with writeToScreen = 0 or 1, and healthRefill = 0 or 1, at any time using the console") 
+console.log("Warning about frame advantage: both players go through 1 frame of idle at the end of all recovery (including dash startup), you can block and nothing else (wakeup lets specials bypass this, wakeup dp is real, wakeup throw is not). A move that is +9 on hit will only link with a move that has a startup <= 8, but a frame advantage of 0 means if both players press the same speed of a button it will trade still.\n\nYou can turn off/on console by setting writeToConsole = 0 or 1, as with writeToScreen = 0 or 1, and healthRefill = 0 or 1, at any time using the console") 
 
 local debugInfo = 0
 
