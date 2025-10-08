@@ -109,7 +109,7 @@ while true do
 		--console.log(currAct, prevAct, currActOpp, prevActOpp, notInNeutral, notInNeutralPrev)
 		if prevAct == 1 and currAct == 1 and prevActOpp == 1 and currActOpp == 1 and notInNeutral == 1 and fbActive ~= 1 then
 			--this means something happened and it should populate the frame data output
-			advLast = framesOfAct-1 - (framesOfActOpp-1) --we waited an extra frame
+			advLast = framesOfAct - framesOfActOpp 
 			advLastOpp = advLast*(-1) --p2 advantage is the negative of p1 advantage
 			
 			if p1InvulnCount > 0 then --calculates juggle advantage for p2
@@ -230,7 +230,7 @@ while true do
 			end
 			if currActOpp == 0 and fbActive == 0 then
 				screenFreezeLast = screenFreezeCount
-				framesOfActOpp = 0
+				framesOfAct = 0
 				startupPreFreeze = 0
 				startupPreFreezeOpp = 0
 			end
