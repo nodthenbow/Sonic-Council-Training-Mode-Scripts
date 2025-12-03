@@ -1,4 +1,4 @@
---This is a hitbox viewer for Sokkou Seitokai - Sonic Council for Bizhawk 2.10
+--This is a frame data visualizer for Sokkou Seitokai - Sonic Council for Bizhawk 2.10
 --[[
 Folder name: "Sokkou Seitokai - Sonic Council (Japan)"
 SHA256 checksum for data and names: e2394185d08792923044f912a263e71e7ca5d3a8f7bad234214a98ae74dd6490-00000009
@@ -7,12 +7,7 @@ SHA256 checksum for data and names: e2394185d08792923044f912a263e71e7ca5d3a8f7ba
 
 --[[
 known issues:
-	throw height is wrong (it's infinite in game, I just made it a height of 50)
-	invulnerability can be bypassed by some stuff (seems like a glitch in the game?)
-	some invuln turns off some collision, this isn't reflected anywhere
-potential issues:
-	collision box is weird, seems correct but it is weird
-	throws may be a pixel longer than they actually are
+	none
 --]]
 --the once loaded stuff
 
